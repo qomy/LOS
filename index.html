@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>คำนวณระดับการให้บริการ (LOS) กรณี 2 ช่องจราจร </title>
+    <title>คำนวณระดับการให้บริการ (LOS) สำหรับ 2 ช่องจราจร </title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -42,7 +42,7 @@
     <div id="result"></div>
 
     <p style="margin-top: 20px; font-size: 12px; color: gray; text-align: center;">
-        ที่มา Highway Capacity Manual 2000  จัดทำโดย นางสาวสุลัดดา ทรัพย์สิน วิศวกรโยธาชำนาญการพิเศษ กลุ่มวางแผนดำเนินงาน สำนักแผนงาน
+        ที่มา Highway Capacity Manual 2000 จัดทำโดย นางสาวสุลัดดา ทรัพย์สิน วิศวกรโยธาชำนาญการพิเศษ กลุ่มวางแผนดำเนินงาน สำนักแผนงาน
     </p>
 
     <script>
@@ -56,14 +56,16 @@
                 return;
             }
 
-            let vcRatio = (trafficVolume * (1 + truckPercentage / 100)) / 2000;
+            let roadCapacity = 20000; // ความสามารถของถนนต่อวัน (2 ช่องจราจร)
+            let vcRatio = (trafficVolume * (1 + truckPercentage / 100)) / roadCapacity;
+            
             let losData = [
-                { level: "A", vc: [0, 0.09], timeDelay: 30, speed: 58, suggestion: "ไม่เหมาะสม" },
-                { level: "B", vc: [0.10, 0.21], timeDelay: 45, speed: 55, suggestion: "ไม่เหมาะสม" },
-                { level: "C", vc: [0.22, 0.36], timeDelay: 60, speed: 52, suggestion: "ไม่เหมาะสม" },
-                { level: "D", vc: [0.37, 0.60], timeDelay: 75, speed: 50, suggestion: "อยู่ระหว่างพิจารณา" },
-                { level: "E", vc: [0.61, 1.00], timeDelay: 76, speed: 45, suggestion: "เหมาะสม" },
-                { level: "F", vc: [1.01, Infinity], timeDelay: 100, speed: 44, suggestion: "เหมาะสม" }
+                { level: "A", vc: [0, 0.09], timeDelay: 10, speed: 70, suggestion: "ยังไม่จำเป็นต้องขยาย" },
+                { level: "B", vc: [0.10, 0.21], timeDelay: 20, speed: 65, suggestion: "ยังไม่จำเป็นต้องขยาย" },
+                { level: "C", vc: [0.22, 0.36], timeDelay: 35, speed: 60, suggestion: "ยังไม่จำเป็นต้องขยาย" },
+                { level: "D", vc: [0.37, 0.60], timeDelay: 50, speed: 55, suggestion: "อาจพิจารณาขยาย 4 เลนหากแนวโน้ม v/c เพิ่มขึ้น" },
+                { level: "E", vc: [0.61, 0.90], timeDelay: 70, speed: 50, suggestion: "ควรขยายเป็น 4 เลนเพื่อรองรับจราจร" },
+                { level: "F", vc: [0.91, Infinity], timeDelay: 90, speed: 40, suggestion: "ควรขยายเป็น 4-6 เลนขึ้นไป" }
             ];
 
             let los = losData.find(item => vcRatio >= item.vc[0] && vcRatio <= item.vc[1]);
@@ -80,10 +82,10 @@
 
             document.getElementById("result").innerHTML = `
                 <h2>ผลลัพธ์</h2>
-                <p>ระดับ: ${los.level}</p>
+                <p><span style="color: red;">ระดับ: ${los.level}</span></p>
                 <p>V/C Ratio: ${vcRatio.toFixed(2)}</p>
-                <p>เวลา Delay: ${los.timeDelay} %</p>
-                <p>ความเร็วเฉลี่ย: ${los.speed} mph</p>
+                <p>เวลา Delay: ${los.timeDelay} วินาที</p>
+                <p>ความเร็วเฉลี่ย: ${los.speed} กม./ชม.</p>
                 <p>ปริมาณจราจร: ${trafficVolume} คันต่อวัน</p>
                 <p>เปอร์เซ็นต์รถบรรทุกหนัก: ${truckPercentage} %</p>
                 <p>เปอร์เซ็นต์ความชัน: ${slopePercentage} %</p>
