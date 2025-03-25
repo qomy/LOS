@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คำนวณระดับการให้บริการ (LOS)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: auto;
+            padding: 20px;
+        }
+        input, button {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+        }
+        button {
+            background-color: blue;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>คำนวณระดับการให้บริการ (LOS)</h1>
+    
+    <label>ปริมาณจราจรเฉลี่ยรายวัน (คันต่อวัน)</label>
+    <input type="number" id="trafficVolume">
+
+    <label>เปอร์เซ็นต์รถบรรทุกหนัก (%)</label>
+    <input type="number" id="truckPercentage">
+
+    <label>เปอร์เซ็นต์ความชัน (%)</label>
+    <input type="number" id="slopePercentage">
+
+    <button onclick="calculateLOS()">คำนวณ</button>
+
+    <div id="result"></div>
+
+    <p style="margin-top: 20px; font-size: 12px; color: gray; text-align: center;">
+        จัดทำโดย นางสาวสุลัดดา ทรัพย์สิน วิศวกรโยธาชำนาญการพิเศษ สำนักแผนงาน
+    </p>
+
+    <script>
+        function calculateLOS() {
+            let trafficVolume = parseFloat(document.getElementById("trafficVolume").value);
+            let truckPercentage = parseFloat(document.getElementById("truckPercentage").value);
+            let slopePercentage = parseFloat(document.getElementById("slopePercentage").value);
+
+            if (isNaN(trafficVolume) || isNaN(truckPercentage) || isNaN(slopePercentage)) {
+                alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+                return;
+            }
+
+            let vcRatio = (trafficVolume * (1 + truckPercentage / 100)) / 2000;
+            let losData = [
+                { level: "A", vc: [0, 0.09], timeDelay: 30, speed: 58, suggestion: "ไม่เหมาะสม" },
+                { level: "B", vc: [0.10, 0.21], timeDelay: 45, speed: 55, suggestion: "ไม่เหมาะสม" },
+                { level: "C", vc: [0.22, 0.36], timeDelay: 60, speed: 52, suggestion: "ไม่เหมาะสม" },
+                { level: "D", vc: [0.37, 0.60], timeDelay: 75, speed: 50, suggestion: "อยู่ระหว่างพิจารณา" },
+                { level: "E", vc: [0.61, 1.00], timeDelay: 76, speed: 45, suggestion: "เหมาะสม" },
+                { level: "F", vc: [1.01, Infinity], timeDelay: 100, speed: 44, suggestion: "เหมาะสม" }
+            ];
+
+            let los = losData.find(item => vcRatio >= item.vc[0] && vcRatio <= item.vc[1]);
+            let laneSuggestion = "";
+
+            if (trafficVolume >= 5000) {
+                if (truckPercentage >= 2 && slopePercentage <= 3) {
+                    laneSuggestion = "แนะนำให้พิจารณา Passing Lane";
+                }
+                if (truckPercentage >= 10 && slopePercentage > 3) {
+                    laneSuggestion = "แนะนำให้พิจารณา Climbing Lane";
+                }
+            }
+
+            document.getElementById("result").innerHTML = `
+                <h2>ผลลัพธ์</h2>
+                <p>ระดับ: ${los.level}</p>
+                <p>V/C Ratio: ${vcRatio.toFixed(2)}</p>
+                <p>เวลา Delay: ${los.timeDelay} %</p>
+                <p>ความเร็วเฉลี่ย: ${los.speed} mph</p>
+                <p>ปริมาณจราจร: ${trafficVolume} คันต่อวัน</p>
+                <p>เปอร์เซ็นต์รถบรรทุกหนัก: ${truckPercentage} %</p>
+                <p>เปอร์เซ็นต์ความชัน: ${slopePercentage} %</p>
+                <p><strong>ข้อเสนอแนะ:</strong> ${los.suggestion}</p>
+                <p style="color: blue;"><strong>${laneSuggestion}</strong></p>
+            `;
+        }
+    </script>
+</body>
+</html>
